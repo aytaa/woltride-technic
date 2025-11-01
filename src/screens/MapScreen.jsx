@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {View, StyleSheet, Text, TouchableOpacity} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import {View, StyleSheet, Text, TouchableOpacity, Platform} from 'react-native';
+import MapView, {Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE} from 'react-native-maps';
 import {Ionicons} from '@expo/vector-icons';
 import wsService from '../services/websocket';
 import {IO_ELEMENT_MAP, getIOValue} from '../constants/ioElements';
@@ -80,6 +80,7 @@ export default function MapScreen({navigation}) {
             </View>
 
             <MapView
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                 ref={mapRef}
                 style={styles.map}
                 initialRegion={{
@@ -184,7 +185,6 @@ export default function MapScreen({navigation}) {
                 </TouchableOpacity>
             )}
 
-            {/* Connection Status */}
             <View style={styles.connectionStatus}>
                 <View style={styles.pulsingDot}/>
                 <Text style={styles.connectionText}>Canlı</Text>
