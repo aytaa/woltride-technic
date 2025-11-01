@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { IO_ELEMENT_MAP, getIOValue, IMPORTANT_IOS } from '../constants/ioElements';
 
 export default function DeviceDetailScreen({ route, navigation }) {
   const { device } = route.params;
@@ -10,6 +12,17 @@ export default function DeviceDetailScreen({ route, navigation }) {
       <Text style={[styles.value, color && { color }]}>{value}</Text>
     </View>
   );
+
+  const renderIcon = (icon) => {
+    if (!icon) return null;
+    if (icon.family === 'Ionicons') {
+      return <Ionicons name={icon.name} size={24} color="#3B82F6" style={{ marginRight: 12 }} />;
+    }
+    if (icon.family === 'MaterialIcons') {
+      return <MaterialIcons name={icon.name} size={24} color="#3B82F6" style={{ marginRight: 12 }} />;
+    }
+    return null;
+  };
 
   const getStatusColor = () => {
     if (device.status === 'offline') return '#EF4444';
@@ -67,15 +80,57 @@ export default function DeviceDetailScreen({ route, navigation }) {
         <InfoRow label="Uydu Sayısı" value={device.gps.satellites} />
       </View>
 
-      {/* IO Data */}
-      {device.io && (
+      {/* Important Metrics Card */}
+      {device.io?.elements && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>⚡ IO Verileri</Text>
-          <InfoRow label="Event ID" value={device.io.eventId} />
-          <InfoRow label="Element Sayısı" value={device.io.elementCount} />
-          {device.io.elements && Object.entries(device.io.elements).map(([key, value]) => (
-            <InfoRow key={key} label={`Element ${key}`} value={value} />
-          ))}
+          <Text style={styles.cardTitle}>⚡ Önemli Ölçümler</Text>
+          {IMPORTANT_IOS.map(ioId => {
+            const value = device.io.elements[ioId];
+            if (value === undefined) return null;
+
+            const ioData = getIOValue(ioId, value);
+            return (
+              <View key={ioId} style={styles.ioRow}>
+                <View style={styles.ioLeft}>
+                  {renderIcon(ioData.icon)}
+                  <Text style={styles.ioLabel}>{ioData.label}</Text>
+                </View>
+                <Text style={[
+                  styles.ioValue,
+                  ioData.color && { color: ioData.color }
+                ]}>
+                  {ioData.value}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
+      {/* All IO Elements Card */}
+      {device.io?.elements && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>📊 Tüm IO Verileri</Text>
+          {Object.entries(device.io.elements).map(([key, value]) => {
+            const ioData = getIOValue(parseInt(key), value);
+            return (
+              <View key={key} style={styles.ioRow}>
+                <View style={styles.ioLeft}>
+                  {renderIcon(ioData.icon)}
+                  <View>
+                    <Text style={styles.ioLabel}>{ioData.label}</Text>
+                    <Text style={styles.ioDescription}>{ioData.description}</Text>
+                  </View>
+                </View>
+                <Text style={[
+                  styles.ioValue,
+                  ioData.color && { color: ioData.color }
+                ]}>
+                  {ioData.value}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       )}
     </ScrollView>
@@ -147,6 +202,34 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#1F2937',
+  },
+  ioRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  ioLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  ioLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  ioDescription: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  ioValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#1F2937',
   },
 });
