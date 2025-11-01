@@ -6,7 +6,7 @@ import wsService from '../services/websocket';
 import {IO_ELEMENT_MAP, getIOValue} from '../constants/ioElements';
 
 export default function MapScreen({navigation}) {
-    
+
     const [devices, setDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState(null);
     const mapRef = useRef(null);
